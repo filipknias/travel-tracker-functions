@@ -1,9 +1,18 @@
-const functions = require('firebase-functions');
+const functions = require("firebase-functions");
+const { db, storage } = require("./admin");
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+// TODO: Think about REST API on cloud functions and only db snapshots on client
+
+exports.onPlaceDelete = functions.firestore
+  .document("places/{id}")
+  .onDelete(async (snapshot) => {
+    snapshot.data().photos.forEach(async (photo) => {
+      await storage.bucket().file(photo.fileName).delete();
+    });
+
+    const query = db.collection("ratings").where("placeId", "==", snapshot.id);
+    const docs = await query.get();
+    docs.forEach(async (doc) => {
+      await db.doc(`/ratings/${doc.id}`).delete();
+    });
+  });
