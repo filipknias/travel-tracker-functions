@@ -1,9 +1,7 @@
 const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-const { db, storage } = require("./admin");
+const { admin, db, storage } = require("./admin");
 
-// TODO: Think about REST API on cloud functions and only db snapshots on client
-
+// Cloud Functions
 exports.onPlaceDelete = functions.firestore
   .document("places/{id}")
   .onDelete(async (snapshot) => {
